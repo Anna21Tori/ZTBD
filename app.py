@@ -20,7 +20,7 @@ offset = 50
 
 pagination = current#getPagination()
 counter = 0
-with open('books_{current}.csv', 'w', encoding='UTF8', newline='') as f:
+with open(f'books_{current}.csv', 'w', encoding='UTF8', newline='') as f:
     writer = csv.writer(f)
     writer.writerow(header)
     for i in range(current - offset, pagination):
