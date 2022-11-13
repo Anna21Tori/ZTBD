@@ -15,12 +15,15 @@ def getPagination():
     pagination = int(soup.find(class_="paginationList__info").find("span").get_text().replace(" ", ""))
     return pagination
 
-pagination = 800#getPagination()
+current = 5200
+offset = 50
+
+pagination = current#getPagination()
 counter = 0
-with open('books_800.csv', 'w', encoding='UTF8', newline='') as f:
+with open(f'books_{current}.csv', 'w', encoding='UTF8', newline='') as f:
     writer = csv.writer(f)
     writer.writerow(header)
-    for i in range(750, pagination):
+    for i in range(current - offset, pagination):
         url = f"{api}/katalog?page={i}"
         page = requests.get(url)
         soup = BeautifulSoup(page.content, "html.parser", from_encoding="utf-8")
