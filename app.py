@@ -45,9 +45,9 @@ with open(f'books_{current}.csv', 'w', encoding='UTF8', newline='') as f:
                 if authorTag.find("a") != None:
                     model.author = authorTag.find("a").get_text()
 
-            publishingTag = bookSoup.find(class_="book__txt").find("a")
-            if publishingTag != None:
-                model.publishing = publishingTag.get_text()
+            publishingTag = bookSoup.find(class_="book__txt")
+            if publishingTag != None and publishingTag.find("a") != None:
+                model.publishing = publishingTag.find("a").get_text()
             
             categoriesTag = bookSoup.find(class_="book__category")
             if categoriesTag != None:
@@ -57,9 +57,9 @@ with open(f'books_{current}.csv', 'w', encoding='UTF8', newline='') as f:
             if isbnTag != None:
                 model.ISBN = isbnTag.find_next_sibling().get_text()
 
-            contentTag = bookSoup.find(class_="collapse-content").find("p")
-            if contentTag != None:
-                model.content = contentTag.get_text()
+            contentTag = bookSoup.find(class_="collapse-content")
+            if contentTag != None and contentTag.find("p"):
+                model.content = contentTag.find("p").get_text()
 
             orginalTitleTag = bookSoup.find("dt", text = re.compile('Tytuł oryginału:'))
             if orginalTitleTag!= None:
