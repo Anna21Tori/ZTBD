@@ -15,7 +15,7 @@ def getPagination():
     pagination = int(soup.find(class_="paginationList__info").find("span").get_text().replace(" ", ""))
     return pagination
 
-current = 3000
+current = 1550
 offset = 50
 
 pagination = current#getPagination()
