@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  app:
+    build: ./backend
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8000:8000"
+
+
+  redis-database:
+    image: bitnami/redis
+    environment:
+      ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+     - "6379:6379"
+    volumes:
+    - redis-db:/bitnami/redis/data
+
+  sql-database:
+    image: postgres:12
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: database
+    ports:
+      - "5432:5432"
+    volumes:
+    - sql-db:/var/lib/postgresql/data
+
+  mongo-databse:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - "27017:27017"
+    volumes:
+    - mongo-db:/data/db
+
+
+volumes:
+  mongo-db:
+  sql-db:
+  redis-db:
