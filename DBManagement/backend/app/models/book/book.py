@@ -5,61 +5,62 @@ from pydantic import BaseModel, Field, validator
 from app.databases.mongo import PyObjectId
 from bson import ObjectId
 from datetime import datetime
+import typing as t
  
 class BookDB(Base):
     __tablename__ = "books"
-    id = Column(String(25), primary_key=True, index=True)
-    title = Column(str)
-    isbn = Column(str)
-    description = Column(str)
-    orginal_name = Column(str)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    title = Column(String(1000))
+    isbn = Column(String(1000))
+    description = Column(String(1000))
+    orginal_name = Column(String(1000))
     pages = Column(Integer)
-    lang = Column(str)
-    date = Column(DateTime)
-    pol_date = Column(DateTime)
-    author = Column(str)
-    publishing = Column(str)
-    translator = Column(str)
+    lang = Column(String(1000))
+    date = Column(DateTime, unique=False, nullable=True)
+    pol_date = Column(DateTime, unique=False, nullable=True)
+    author = Column(String(1000))
+    publishing = Column(String(1000))
+    translator = Column(String(1000))
 
-    comments = relationship("app.models.comment.comment.CommentDB", back_populates="book", lazy="dynamic")
-    quotes = relationship("app.models.quote.quote.QuoteDB", back_populates="book", lazy="dynamic")
-    categories = relationship("app.models.category.category.CategoryDB", back_populates="book", lazy="dynamic")
+    
+    quotes = relationship("app.models.quote.quote.QuoteDB", back_populates="book")
+    comments = relationship("app.models.comment.comment.CommentDB", back_populates="book")
+    categories = relationship("app.models.category.category.CategoryDB", back_populates="book")
 
 class BookMongo(BaseModel):
     mongo_id: ObjectId = Field(default_factory=PyObjectId, alias="_id")
-    id: str
     title: str
-    isbn: str
-    description: str
-    orginal_name: str
-    pages: int
-    lang: str
-    date: DateTime
-    pol_date: DateTime
-    author_id: str
-    publishing_id: str
-    translator_id: str
+    isbn: t.Optional[str]
+    description: t.Optional[str]
+    orginal_name: t.Optional[str]
+    pages: t.Optional[int]
+    lang: t.Optional[str]
+    date: t.Optional[datetime]
+    pol_date: t.Optional[datetime]
+    author: t.Optional[str]
+    publishing: t.Optional[str]
+    translator: t.Optional[str]
 
     class Config:
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
+        json_encoders = {ObjectId: int}
 
 
 class BookBase(BaseModel):
     title: str
-    isbn: str
-    description: str
-    orginal_name: str
-    pages: int
-    lang: str
-    date: datetime
-    pol_date: datetime
-    author: str
-    publishing: str
-    translator: str
+    id: t.Optional[int]
+    isbn: t.Optional[str]
+    description: t.Optional[str]
+    orginal_name:t.Optional[str]
+    pages: t.Optional[int]
+    lang: t.Optional[str]
+    date: t.Optional[datetime]
+    pol_date: t.Optional[datetime]
+    author: t.Optional[str]
+    publishing: t.Optional[str]
+    translator: t.Optional[str]
     
-    id: str
 
 class BookCreate(BookBase):
     pass

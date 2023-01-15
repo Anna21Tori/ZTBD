@@ -6,39 +6,39 @@ from datetime import datetime
 from pydantic import Field
 from bson import ObjectId
 from app.databases.mongo import PyObjectId
+import typing as t
 
 from app.models.book.book import Book
 
 class CategoryDB(Base):
     __tablename__ = "categotries"
-    id = Column(String(25), primary_key=True, index=True)
-    name = Column(String(10000))
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    name = Column(String(10000), nullable=True)
 
-    book_id = Column(String(25), ForeignKey("books.id"))
-    # book = relationship("app.models.book.book.BookDB", back_populates="reviews")
+    book_id = Column(Integer, ForeignKey("books.id"))
+    book = relationship("app.models.book.book.BookDB", back_populates="categories")
 
 
 class CategoryMongo(BaseModel):
     mongo_id: ObjectId = Field(default_factory=PyObjectId, alias="_id")
-    id: str
-    name: str
+    name: t.Optional[str]
 
-    book_id: ObjectId
+    book_id: t.Optional[ObjectId]
 
     class Config:
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
+        json_encoders = {ObjectId: int}
 
 
 
 class CategoryBase(BaseModel):
-    name: str
-
-    book_id: str
+    name: t.Optional[str]
+    id: t.Optional[int]
+    book_id: t.Optional[int]
     # book: Book
 
-    id: str
+    # id: t.Optional[str]
 
 class CategoryCreate(CategoryBase):
     pass

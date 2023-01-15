@@ -16,12 +16,12 @@ import json
 class Book:
     title: str
     description: str
-    ISBN: str
+    isbn: str
     publishing: str
     author: str
-    orginalTitle: str
+    orginal_name: str
     date: str
-    datePol: str
+    pol_date: str
     pages: str
     lang: str
     translator: str
@@ -61,33 +61,34 @@ class Category:
 @dataclass
 class Catalog:
     book: Book
-    comments: t.List[str]
-    quotes: t.List[str]
-    categories: t.List[str]
+    comments: t.List[Comment]
+    quotes: t.List[Quote]
+    categories: t.List[Category]
 
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=True, indent=4)
 
+
 # session = requests.session()
-def add_book(book: Book, url: str, db: str):
-    resp = requests.post(f"{url}/books/", params={"db": db}, json={
+async def add_book(session: aiohttp.ClientSession, book: Book, url: str, db: str):
+    async with session.post(f"{url}/books/", params={"db": db}, json={
         "title": book.title,
-        "isbn": book.ISBN,
+        "isbn": book.isbn,
         "description": book.description,
-        "orginal_name": book.orginalTitle,
+        "orginal_name": book.orginal_name,
         "pages": book.pages,
         "lang": book.lang,
         "date": book.date,
-        "pol_date": book.datePol,
+        "pol_date": book.pol_date,
         "author": book.author,
         "publishing": book.publishing,
         "translator": book.translator
-    })
-    if resp.status_code == 200:
-        logging.info(f"added {book.title}") 
-    elif resp.status_code == 409:
-        logging.debug(f"already exists {book.title}")
+    }) as resp:
+        if resp.status == 200:
+            logging.info(f"added {book.title} {resp}") 
+        elif resp.status == 409:
+            logging.debug(f"already exists {book.title}")
 
 async def add_comment_async(session: aiohttp.ClientSession, comment: Comment, url: str, db: str):
     async with session.post(f"{url}/comments/", params={"db": db}, json={
@@ -116,7 +117,7 @@ async def add_quote_async(session: aiohttp.ClientSession, quote: Quote, url: str
             raise Exception(f"status code: {resp.status}")
 
 async def add_category_async(session: aiohttp.ClientSession, category: Category, url: str, db: str):
-    async with session.post(f"{url}/categoriess/", params={"db": db}, json={
+    async with session.post(f"{url}/categories/", params={"db": db}, json={
         "name": category.name,
         "book_id": category.book_id
 
@@ -128,29 +129,23 @@ async def add_category_async(session: aiohttp.ClientSession, category: Category,
         else:
             raise Exception(f"status code: {resp.status}")
         
-async def add_catalog_async(session: aiohttp.ClientSession, catalog: Catalog, url: str, db: str):
-    async with session.post(f"{url}/catalog/", params={"db": db}, json={
-        "book": catalog.book,
-        "comments": catalog.comments,
-        "quotes": catalog.quotes,
-        "categories": catalog.categories
-
-    }) as resp:
+async def add_catalog_async(session: aiohttp.ClientSession, catalog: str, url: str, db: str):
+    async with session.post(f"{url}/catalog/", params={"db": db}, json=catalog)as resp:
         if resp.status == 200:
-            logging.info(f"added catalog") 
+            logging.info(f"added catalog {resp}") 
         elif resp.status == 409:
             logging.debug(f"already exists catalog")
         else:
-            raise Exception(f"status code: catalog")
+            raise Exception(f"status code: {resp}")
 
-async def batch_process(records, url: str, db: str):
+async def batch_process(records: t.List[Catalog], url: str, db: str):
     async with aiohttp.ClientSession() as session:
         tasks = []
         for record in records:
-            tasks.append(asyncio.ensure_future(add_catalog_async(session, record, url, db)))
+            tasks.append(asyncio.ensure_future(add_book(session, record.book, url, db)))
         
         results = await asyncio.gather(*tasks)
-        # print(results[0])
+        #print(results[0])
 
 def main():
     parser = argparse.ArgumentParser()
@@ -202,56 +197,32 @@ def main():
                             
                     _book: Book = Book(title=title, 
                                         description=description, 
-                                        ISBN=isbn, 
+                                        isbn=isbn, 
                                         publishing=publishing, 
                                         author=author, 
-                                        orginalTitle=originalTitle, 
+                                        orginal_name=originalTitle, 
                                         date=date, 
-                                        datePol=datePol, 
+                                        pol_date=datePol, 
                                         pages=pages, 
                                         lang=lang, 
-                                        transator=translator)
+                                        translator=translator)
                     
-                    _comments: t.List[str] = []
+                    _comments: t.List[Comment] = []
                     for comment in comments:
-                        _comments.append(Comment(content=comment).to_json())
+                        _comments.append(Comment(content=comment))
                         
-                    _quotes: t.List[str] = []
+                    _quotes: t.List[Quote] = []
                     for quote in quotes:
                         _quotes.append(Comment(content=quote))
                         
-                    _categories: t.List[str] = []
+                    _categories: t.List[Category] = []
                     for category in categories:
-                        _categories.append(Comment(content=category).to_json())
+                        _categories.append(Comment(content=category))
                         
-                    catalog: Catalog = Catalog(book=_book.to_json(), comments=_comments, quotes=_quotes, categories=_categories)
+                    catalog: Catalog = Catalog(book=_book, comments=_comments, quotes=_quotes, categories=_categories)
                     asyncio.run(batch_process([catalog], args.url, db))
+
                 
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument("--file")
-    # parser.add_argument("--url")
-    # args = parser.parse_args()
-
-    # logging.basicConfig(level=logging.INFO)
-
-    # records_batch = []
-    # with open(args.file) as rfile:
-    #     reader = csv.DictReader(rfile)
-    #     with Bar('Processing', max=ALL_RECORDS_COUNT, suffix = '%(percent).1f%% - %(eta_td)s ') as bar:
-    #         for db in ["mongodb", "postgresql"]:
-    #             for i, row in enumerate(reader):
-    #                 logging.debug(f"processing - {db} - {i}")
-    #                 row.pop('')
-    #                 row = {k.replace(".", "_"):v for k,v in row.items()}
-
-    #                 record = Record(**row)
-    #                 records_batch.append(record)
-                    
-    #                 if len(records_batch)%BATCH_SIZE == 0:
-    #                     logging.info(f"processing batch - {i}")
-    #                     asyncio.run(batch_process(records_batch, args.url, db))
-    #                     records_batch = []
-    #                     bar.next()
 
 
                 
