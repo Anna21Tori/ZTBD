@@ -16,6 +16,7 @@ def load_all_records():
     category_id = 1
 
     repo: Repository = Repository(books=[], quotes=[], categories=[], comments=[])
+
     for file in os.listdir("./storage"):
         with open(f"./storage/{file}", encoding="utf8") as file_obj:
             
@@ -86,6 +87,6 @@ def load_all_records():
 
                 book_id += 1
                 repo.books.append(_book)
-            print("Records from file'"+file+"' were loaded")
+            print(f"Records from file '{file}' were loaded")
 
     return repo
