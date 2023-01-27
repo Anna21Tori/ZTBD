@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod
+import datetime
+
+from sqlalchemy import func
 from app.models.book.book import BookDB, BookMongo, BookCreate
 from app.models.comment.comment import CommentDB, CommentMongo, CommentCreate
 from app.models.quote.quote import QuoteDB, QuoteMongo, QuoteCreate
@@ -67,34 +70,25 @@ class RepositorySql(RepositoryDAO):
         # print(f"Count: {query.count()}")
 
         # 2
-        # cat = ["dramat", "komedia", "romans", "tragedia"]
-        # subquery = self.session.query(CategoryDB.book_id).filter(CategoryDB.name not in cat).subquery()
-        # query = self.session.query(BookDB).filter(BookDB.id.in_(subquery))
+        # categories = ["dramat", "komedia", "tragedia", "horror", "fantasy", "historia", "romans"]
+        # language = "polski"
+        # subquery = self.session.query(CategoryDB.book_id).filter(CategoryDB.name.in_(categories)).subquery()
+        # query = self.session.query(BookDB).filter(BookDB.id.in_(subquery), BookDB.lang == language)
         # print(f"Count: {query.count()}")
 
         # 3
-        # query = self.session.query(BookDB).filter(BookDB.lang != "polski")
+        # query = self.session.query(BookDB).filter(func.date(BookDB.date) > '2010-01-01', func.date(BookDB.date) < '2020-01-01')
         # print(f"Count: {query.count()}")
 
         # 4
-        # query = self.session.query(BookDB).filter(BookDB.author.contains("jan"))
-        # print(f"Count: {query.count()}")
+        query = self.session.query(CommentDB.book_id, func.count(BookDB.id)).join(BookDB).group_by(CommentDB.book_id).all()
+        print(f"{len(query)}")
 
         # 5
-        subquery = self.session.query(QuoteDB.book_id).filter(QuoteDB.content.contains("co")).subquery()
-        query = self.session.query(BookDB).filter(BookDB.id.in_(subquery))
-        print(f"Count: {query.count()}")
-
-
-
-        # self.collection = self.db.get_collection("books")
-        # query = {"pages": {"$gt": 100, "$lt": 200}}
-        # all_documents = self.collection.find(query)
-        # counter = 0
-        # for document in all_documents:
-        #     counter += 1
-        #     # print(document)
-        # print(f"Counter: {counter}")
+        # word = "co"
+        # subquery = self.session.query(QuoteDB.book_id).filter(QuoteDB.content.contains(word)).subquery()
+        # query = self.session.query(BookDB).filter(BookDB.id.in_(subquery))
+        # print(f"Count: {query.count()}")
 
 
     def clear_db(self):
@@ -149,14 +143,78 @@ class RepositoryMongo(RepositoryDAO):
 
 
     def find(self):
+        # 4
+        # query = self.session.query(CommentDB.book_id, func.count(BookDB.id)).join(BookDB).group_by(CommentDB.book_id).all()
+        # print(f"{len(query)}")
         self.collection = self.db.get_collection("books")
         query = {"pages": {"$gt": 100, "$lt": 200}}
-        all_documents = self.collection.find(query)
-        counter = 0
-        for document in all_documents:
-            counter += 1
-            # print(document)
-        print(f"Counter: {counter}")
+        print(self.collection.count_documents(query))
+        # query = {"pages": {"$gt": 100, "$lt": 200}}
+        # self.collection.find({"pages": {"$gt": 100, "$lt": 200}})
+        # print(self.collection.count_documents("book_id"))
+
+        
+        # 5
+        # word = "co"
+        # subquery = self.session.query(QuoteDB.book_id).filter(QuoteDB.content.contains(word)).subquery()
+        # query = self.session.query(BookDB).filter(BookDB.id.in_(subquery))
+        # print(f"Count: {query.count()}")
+
+        # self.collection = self.db.get_collection("books")
+        # query = {"content": ".*co.*"}
+        # all_documents = self.collection.find(query)
+        # counter = 0
+        # for document in all_documents:
+        #     counter += 1
+        # print(f"Counter: {counter}")
+
+
+        #3
+        # self.collection = self.db.get_collection("books")
+        # first_date = datetime.datetime(2010, 1, 1)
+        # second_date = datetime.datetime(2020, 1, 1)
+        # query = {"date": {"$gt": first_date, "$lt": second_date}}
+        # all_documents = self.collection.find(query)
+        # counter = 0
+        # for document in all_documents:
+        #     counter += 1
+        # print(f"Counter: {counter}")
+
+        #1
+        # self.collection = self.db.get_collection("books")
+        # query = {"pages": {"$gt": 100, "$lt": 200}}
+        # all_documents = self.collection.find(query)
+        # counter = 0
+        # for document in all_documents:
+        #     counter += 1
+        # print(f"Counter: {counter}")
+
+        # categories = ["dramat", "komedia", "tragedia", "horror", "fantasy", "historia", "romans"]
+        # self.collection = self.db.get_collection("books").aggregate([
+        # {
+        #     "$lookup": {
+        #         "from": "categories",
+        #         "localField": "id",
+        #         "foreignField": "book_id",
+        #         "as": "categories"
+        #     }
+        # }
+        # ])
+        # query = {"categories.name": {"$in": categories}}
+        # all_documents = self.collection.find(query)
+        # counter = 0
+        # for document in all_documents:
+        #     counter += 1
+        # print(f"Counter: {counter}")
+
+
+        # categories = ["dramat", "komedia", "tragedia", "horror", "fantasy", "historia", "romans"]
+        # language = "polski"
+        # subquery = self.session.query(CategoryDB.book_id).filter(CategoryDB.name.in_(categories)).subquery()
+        # query = self.session.query(BookDB).filter(BookDB.id.in_(subquery), BookDB.lang == language)
+        # print(f"Count: {query.count()}")
+
+
 
     def clear_db(self):
         self.db.drop_collection("books")

@@ -17,7 +17,9 @@ def load_all_records():
 
     repo: Repository = Repository(books=[], quotes=[], categories=[], comments=[])
 
-    for file in os.listdir("./storage"):
+    files = ["books_50.csv", "books_100.csv", "books_150.csv", "books_200.csv", "books_250.csv"]
+
+    for file in files: # os.listdir("./storage"):
         with open(f"./storage/{file}", encoding="utf8") as file_obj:
             
             heading = next(file_obj)

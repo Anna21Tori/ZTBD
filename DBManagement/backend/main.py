@@ -110,7 +110,7 @@ def find_books_test():
     mongodb.clear_db()
     postgresql.clear_db()
     records: Repository = load_all_records()
-    times = [1, 10, 100, 1000]
+    times = [1, 10, 100, 1000, 10000]
     all_measurement: AddTest = AddTest(mongodb=[], postgresql=[])
     
     for db in ["mongodb", "postgresql"]:
