@@ -172,6 +172,7 @@ class RepositoryMongo(RepositoryDAO):
             book_mongo.categories = categories
             book_mongo.quotes = quotes
             book_json = book_mongo.dict(by_alias=True)
+
             _books.append(book_json)
 
         start_time = time.time()

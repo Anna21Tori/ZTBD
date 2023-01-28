@@ -17,7 +17,10 @@ def load_all_records():
 
     repo: t.List[Book] = []
 
-    for file in ["books_50.csv", "books_100.csv", "books_150.csv"]:
+
+    files = ["books_50.csv", "books_100.csv", "books_150.csv"]
+
+    for file in files: # os.listdir("./storage"):
         with open(f"./storage/{file}", encoding="utf8") as file_obj:
             
             heading = next(file_obj)
