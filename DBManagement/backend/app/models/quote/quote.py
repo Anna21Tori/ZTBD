@@ -7,7 +7,7 @@ from pydantic import Field
 from bson import ObjectId
 from app.databases.mongo import PyObjectId
 import typing as t
-from app.models.book.book import Book
+
 
 class QuoteDB(Base):
     __tablename__ = "quotes"
@@ -26,7 +26,7 @@ class QuoteMongo(BaseModel):
     # timestamp_created: datetime
     # timestampe_updated: datetime
 
-    book_id: t.Optional[ObjectId]
+    # book_id: t.Optional[ObjectId]
 
     class Config:
         allow_population_by_field_name = True

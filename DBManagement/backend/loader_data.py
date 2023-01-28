@@ -2,7 +2,7 @@ from app.models.book.book import BookCreate
 from app.models.comment.comment import CommentCreate
 from app.models.quote.quote import QuoteCreate
 from app.models.category.category import CategoryCreate
-from app.repository import Repository
+from app.repository import Book
 import os
 import csv
 import datetime
@@ -15,15 +15,17 @@ def load_all_records():
     quote_id = 1
     category_id = 1
 
-    repo: Repository = Repository(books=[], quotes=[], categories=[], comments=[])
+    repo: t.List[Book] = []
 
-    for file in os.listdir("./storage"):
+    for file in ["books_50.csv", "books_100.csv", "books_150.csv"]:
         with open(f"./storage/{file}", encoding="utf8") as file_obj:
             
             heading = next(file_obj)
             reader_obj = csv.reader(file_obj)
 
             for row in reader_obj:
+                item: Book = Book(book=None, quotes=[], categories=[], comments=[])
+
                 title = row[0].strip()
                 author = row[1].strip()
                 categories = []
@@ -70,23 +72,25 @@ def load_all_records():
                 for comment in comments:
                     if comment != "":
                         _comment: CommentCreate = CommentCreate(content=comment, id=comment_id, book_id=book_id)
-                        repo.comments.append(_comment)
+                        item.comments.append(_comment)
                         comment_id +=1
                                 
                 for quote in quotes:
                     if quote != "":
                         _quote: CommentCreate = CommentCreate(content=quote, id=quote_id, book_id=book_id)
-                        repo.quotes.append(_quote)
+                        item.quotes.append(_quote)
                         quote_id += 1
                                 
                 for category in categories:
                     if category != '':
                             _category: CategoryCreate = CategoryCreate(name=category, id=category_id, book_id=book_id)
-                            repo.categories.append(_category)
+                            item.categories.append(_category)
                             category_id += 1
 
                 book_id += 1
-                repo.books.append(_book)
+                item.book = _book
+                repo.append(item)
+                
             print(f"Records from file '{file}' were loaded")
 
     return repo

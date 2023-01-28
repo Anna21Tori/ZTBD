@@ -8,7 +8,7 @@ from bson import ObjectId
 from app.databases.mongo import PyObjectId
 import typing as t
 
-from app.models.book.book import Book
+
 
 class CategoryDB(Base):
     __tablename__ = "categotries"
@@ -23,7 +23,7 @@ class CategoryMongo(BaseModel):
     mongo_id: ObjectId = Field(default_factory=PyObjectId, alias="_id")
     name: t.Optional[str]
 
-    book_id: t.Optional[ObjectId]
+    # book_id: t.Optional[ObjectId]
 
     class Config:
         allow_population_by_field_name = True
@@ -35,7 +35,7 @@ class CategoryMongo(BaseModel):
 class CategoryBase(BaseModel):
     name: t.Optional[str]
     id: t.Optional[int]
-    book_id: t.Optional[int]
+    book_id: t.Optional[int] 
     # book: Book
 
     # id: t.Optional[str]

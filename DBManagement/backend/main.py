@@ -1,15 +1,15 @@
 from dataclasses import dataclass
-from app.repository import RepositoryMongo, RepositorySql, Repository
+from app.repository import RepositoryMongo, RepositorySql, Book, RepositoryDAO
 from loader_data import load_all_records
 import typing as t
 import json
 import time
-
+import argparse
 
 @dataclass
 class AddTestItem:
     num_records: int
-    time: t.List[int]
+    time: t.List[float]
 
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
@@ -18,134 +18,128 @@ class AddTestItem:
 
 @dataclass
 class AddTest:
-    mongodb: t.List[AddTestItem]
-    postgresql: t.List[AddTestItem]
+    test: t.List[AddTestItem]
 
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=True, indent=4)
 
-def add_books_test():
-    mongodb = RepositoryMongo()
-    postgresql = RepositorySql()
-    mongodb.clear_db()
-    postgresql.clear_db()
-    records: Repository = load_all_records()
-    times = [1, 10, 100, 1000, 10000]
-    all_measurement: AddTest = AddTest(mongodb=[], postgresql=[])
-    
-    for db in ["mongodb", "postgresql"]:
-        if db == "mongodb":
-            for t in times:
-                measurement: AddTestItem = AddTestItem(num_records=t, time=[])
-                for _ in range (0, 3):
-                    mongodb.clear_db()
-                    repo: Repository = Repository(books=records.books[0: t+1], categories=[], quotes=[], comments=[])
-                    start_time = time.time()
-                    mongodb.save(repo)
-                    end_time = time.time()
-                    measurement.time.append(end_time-start_time)
-                all_measurement.mongodb.append(measurement)
-                print(db+ " "+ str(t))
-        if db == "postgresql":
-            for t in times:
-                measurement: AddTestItem = AddTestItem(num_records=t, time=[])
-                for _ in range (0, 3):
-                    postgresql.clear_db()
-                    repo: Repository = Repository(books=records.books[0: t+1], categories=[], quotes=[], comments=[])
-                    start_time = time.time()
-                    postgresql.save(repo)
-                    end_time = time.time()
-                    measurement.time.append(end_time-start_time)
-                all_measurement.postgresql.append(measurement)
-                print(db+ " "+ str(t))
+def get_repository(db: str) -> RepositoryDAO:
+    if db == "mongodb":
+        return RepositoryMongo()
+    if db == "postgresql":
+        return RepositorySql()
 
-    with open('add_test.json', 'w') as outfile:
+#without comments, categories and quotes
+def add_only_books_test(db):
+    import typing as t
+    
+    dao = get_repository(db)
+    dao.clear_db()
+    records: t.List[Book] = load_all_records()
+    times = [1, 10, 100, 1000, 10000, 50000, 100000, 150000, 200000, 250000, 300000]
+    all_measurement: AddTest =  AddTest(test=[])
+    for t in times:
+        measurement: AddTestItem = AddTestItem(num_records=t, time=[])
+        for _ in range (0, 3):
+            dao.clear_db()
+            time = dao.save(records[0: t+1])
+            measurement.time.append(time)
+        all_measurement.test.append(measurement)
+        print(db+ " "+ str(t))
+
+    with open(f'add_test_{db}.json', 'w') as outfile:
         outfile.write(all_measurement.to_json())
 
-def delete_books_test():
-    mongodb = RepositoryMongo()
-    postgresql = RepositorySql()
-    mongodb.clear_db()
-    postgresql.clear_db()
-    records: Repository = load_all_records()
-    times = [1, 10, 100, 1000, 10000]
-    all_measurement: AddTest = AddTest(mongodb=[], postgresql=[])
+#with comment, categories and quotes
+def add_books_test_all(db):
+    import typing as t
     
-    for db in ["mongodb", "postgresql"]:
-        if db == "mongodb":
-            for t in times:
-                measurement: AddTestItem = AddTestItem(num_records=t, time=[])
-                for _ in range (0, 3):
-                    mongodb.clear_db()
-                    repo: Repository = Repository(books=records.books[0: t+1], categories=[], quotes=[], comments=[])
-                    mongodb.save(repo)
-                    start_time = time.time()
-                    mongodb.delete(repo)
-                    end_time = time.time()
-                    measurement.time.append(end_time-start_time)
-                all_measurement.mongodb.append(measurement)
-                print(db+ " "+ str(t))
-        if db == "postgresql":
-            for t in times:
-                measurement: AddTestItem = AddTestItem(num_records=t, time=[])
-                for _ in range (0, 3):
-                    postgresql.clear_db()
-                    repo: Repository = Repository(books=records.books[0: t+1], categories=[], quotes=[], comments=[])
-                    postgresql.save(repo)
-                    start_time = time.time()
-                    postgresql.delete(repo)
-                    end_time = time.time()
-                    measurement.time.append(end_time-start_time)
-                all_measurement.postgresql.append(measurement)
-                print(db+ " "+ str(t))
+    dao = get_repository(db)
+    dao.clear_db()
+    records: t.List[Book] = load_all_records()
+    times = [1, 10, 100, 1000, 10000]
+    all_measurement: AddTest =  AddTest(test=[])
+    for t in times:
+        measurement: AddTestItem = AddTestItem(num_records=t, time=[])
+        for _ in range (0, 3):
+            dao.clear_db()
+            time = dao.save_all(records[0: t+1])
+            measurement.time.append(time)
+        all_measurement.test.append(measurement)
+        print(db+ " "+ str(t))
 
-    with open('delete_test.json', 'w') as outfile:
+    with open(f'add_test_{db}_all.json', 'w') as outfile:
         outfile.write(all_measurement.to_json())
 
-
-def find_books_test():
-    mongodb = RepositoryMongo()
-    postgresql = RepositorySql()
-    mongodb.clear_db()
-    postgresql.clear_db()
-    records: Repository = load_all_records()
+def del_books_test(db):
+    import typing as t
+    
+    dao = get_repository(db)
+    dao.clear_db()
+    records: t.List[Book] = load_all_records()
     times = [1, 10, 100, 1000]
-    all_measurement: AddTest = AddTest(mongodb=[], postgresql=[])
-    
-    for db in ["mongodb", "postgresql"]:
-        if db == "mongodb":
-            for t in times:
-                measurement: AddTestItem = AddTestItem(num_records=t, time=[])
-                for _ in range (0, 3):
-                    mongodb.clear_db()
-                    repo: Repository = Repository(books=records.books[0: t+1], categories=[], quotes=[], comments=[])
-                    mongodb.save(repo)
-                    start_time = time.time()
-                    mongodb.find()
-                    end_time = time.time()
-                    measurement.time.append(end_time-start_time)
-                all_measurement.mongodb.append(measurement)
-                print(db+ " "+ str(t))
-        if db == "postgresql":
-            for t in times:
-                measurement: AddTestItem = AddTestItem(num_records=t, time=[])
-                for _ in range (0, 3):
-                    postgresql.clear_db()
-                    repo: Repository = Repository(books=records.books[0: t+1], categories=records.categories[0: t+1], quotes=records.quotes[0: t+1], comments=records.comments[0: t+1])
-                    postgresql.save(repo)
-                    start_time = time.time()
-                    postgresql.find()
-                    end_time = time.time()
-                    measurement.time.append(end_time-start_time)
-                all_measurement.postgresql.append(measurement)
-                print(db+ " "+ str(t))
+    all_measurement: AddTest =  AddTest(test=[])
+    for t in times:
+        measurement: AddTestItem = AddTestItem(num_records=t, time=[])
+        for _ in range (0, 1):
+            dao.clear_db()
+            dao.save_all(records)
+            time = dao.delete(t)
+            measurement.time.append(time)
+        all_measurement.test.append(measurement)
+        print(db+ " "+ str(t))
 
-    with open('query1_test.json', 'w') as outfile:
+    with open(f'del_test_{db}.json', 'w') as outfile:
         outfile.write(all_measurement.to_json())
+
+def filter_books_test(db):
+    import typing as t
+    
+    dao = get_repository(db)
+    dao.clear_db()
+    records: t.List[Book] = load_all_records()
+    dao.save_all(records)
+    all_measurement: AddTest =  AddTest(test=[])
+    measurement1: AddTestItem = AddTestItem(num_records=0, time=[])
+    for _ in range (0, 10):
+        result = dao.filter_test_1()
+        measurement1.time.append(result[1])
+        measurement1.num_records = result[0]
+    all_measurement.test.append(measurement1)
+
+    measurement2: AddTestItem = AddTestItem(num_records=0, time=[])
+    for _ in range (0, 10):
+        result = dao.filter_test_2()
+        measurement2.time.append(result[1])
+        measurement2.num_records = result[0]
+    all_measurement.test.append(measurement2)
+
+        
+
+    with open(f'filter_test_{db}.json', 'w') as outfile:
+        outfile.write(all_measurement.to_json())
+
 
 
 if __name__ == "__main__":
-    # add_books_test()
-    # delete_books_test()
-    find_books_test()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--test")
+    args = parser.parse_args()
+
+    if args.test == "add_books_mongo":
+        add_only_books_test("mongodb")
+    if args.test == "add_books_postgresql":
+        add_only_books_test("postgresql")
+    if args.test == "add_books_mongo_all":
+        add_books_test_all("mongodb")
+    if args.test == "add_books_postgresql_all":
+        add_books_test_all("postgresql")
+    if args.test == "del_books_mongo":
+        del_books_test("mongodb")
+    if args.test == "del_books_postgresql":
+         del_books_test("postgresql")
+    if args.test == "filter_books_mongo":
+        filter_books_test("mongodb")
+    if args.test == "filter_books_postgresql":
+        filter_books_test("postgresql")

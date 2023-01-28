@@ -6,6 +6,9 @@ from app.databases.mongo import PyObjectId
 from bson import ObjectId
 from datetime import datetime
 import typing as t
+from app.models.comment.comment import CommentMongo
+from app.models.category.category import CategoryMongo
+from app.models.quote.quote import QuoteMongo
  
 class BookDB(Base):
     __tablename__ = "books"
@@ -40,6 +43,9 @@ class BookMongo(BaseModel):
     author: t.Optional[str]
     publishing: t.Optional[str]
     translator: t.Optional[str]
+    comments: t.Optional[t.List[CommentMongo]]
+    categories: t.Optional[t.List[CategoryMongo]]
+    quotes: t.Optional[t.List[QuoteMongo]]
 
     class Config:
         allow_population_by_field_name = True
@@ -66,6 +72,5 @@ class BookCreate(BookBase):
     pass
 
 class Book(BookBase):
-
     class Config:
         orm_mode = True

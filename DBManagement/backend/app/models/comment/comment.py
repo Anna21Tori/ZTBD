@@ -8,7 +8,7 @@ from bson import ObjectId
 from app.databases.mongo import PyObjectId
 import typing as t
 
-from app.models.book.book import Book
+# from app.models.book.book import Book
 
 class CommentDB(Base):
     __tablename__ = "comments"
@@ -28,7 +28,7 @@ class CommentMongo(BaseModel):
     # timestamp_created: datetime
     # timestampe_updated: datetime
 
-    book_id: t.Optional[ObjectId]
+    # book_id: t.Optional[ObjectId]
 
     class Config:
         allow_population_by_field_name = True
