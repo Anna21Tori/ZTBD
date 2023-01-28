@@ -134,7 +134,7 @@ class RepositorySql(RepositoryDAO):
             .filter(BookDB.id.in_(subquery_quotes))
         end_time = time.time()
         # print(str(query))
-        return [query.count(), (end_time-start_time)*1000]
+        return [query.count(), (end_time-start_time)*1000, "SELECT * FROM categories JOIN books ON categories.book_id = books.id JOIN quotes ON quotes.book_id = books.id WHERE books.lang = 'polski' AND books.pages > 100 AND books.pages < 200 AND quotes.content LIKE 'to'"]
 
     def clear_db(self):
         Base.metadata.drop_all(bind=engine)
@@ -226,7 +226,7 @@ class RepositoryMongo(RepositoryDAO):
     def filter_test_2(self):
         categories = ["dramat", "komedia", "tragedia", "horror", "fantasy", "historia", "romans"]
         self.collection = self.db.get_collection("books")
-        query = {"categories.name": {"$in": categories}, "lang": "polski", "pages": {"$gt": 100, "$lt": 200}}
+        query = {"categories.name": {"$in": categories}, "lang": "polski", "pages": {"$gt": 100, "$lt": 200}, "quotes.content": {"$regex" : "to"}}
         start_time = time.time()
         all_documents = self.collection.find(query)
         end_time = time.time()
