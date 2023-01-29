@@ -20,7 +20,7 @@ def load_all_records():
 
     files = ["books_50.csv", "books_100.csv", "books_150.csv", "books_200.csv", "books_250.csv", "books_300.csv", "books_350.csv", "books_400.csv", "books_450.csv", "books_550.csv", "books_500.csv", "books_600.csv"]
 
-    for file in files:# os.listdir("./storage"):
+    for file in os.listdir("./storage"):
         with open(f"./storage/{file}", encoding="utf8") as file_obj:
             
             heading = next(file_obj)
