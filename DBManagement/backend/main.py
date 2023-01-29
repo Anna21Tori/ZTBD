@@ -140,10 +140,14 @@ if __name__ == "__main__":
         add_books_test_all("mongodb")
     if args.test == "add_books_postgresql_all":
         add_books_test_all("postgresql")
+    if args.test == "add_books_redis_all":
+        add_books_test_all("redis")
     if args.test == "del_books_mongo":
         del_books_test("mongodb")
     if args.test == "del_books_postgresql":
          del_books_test("postgresql")
+    if args.test == "del_books_redis":
+         del_books_test("redis")
     if args.test == "filter_books_mongo":
         filter_books_test("mongodb")
     if args.test == "filter_books_postgresql":

@@ -7,7 +7,7 @@ from pydantic import Field
 from bson import ObjectId
 from app.databases.mongo import PyObjectId
 import typing as t
-
+import json
 
 
 class CategoryDB(Base):
@@ -30,6 +30,12 @@ class CategoryMongo(BaseModel):
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: int}
 
+
+class CategoryRedis(BaseModel):
+    content: t.Optional[str]
+    def to_json(self):
+        return json.dumps(self, default=lambda o: o.__dict__, 
+            sort_keys=True, indent=4)
 
 
 class CategoryBase(BaseModel):
