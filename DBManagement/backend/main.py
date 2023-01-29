@@ -3,8 +3,8 @@ from app.repository import RepositoryMongo, RepositorySql, Book, RepositoryDAO, 
 from loader_data import load_all_records
 import typing as t
 import json
-import time
 import argparse
+
 
 @dataclass
 class AddTestItem:
@@ -24,6 +24,7 @@ class AddTest:
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=True, indent=4)
 
+
 def get_repository(db: str) -> RepositoryDAO:
     if db == "mongodb":
         return RepositoryMongo()
@@ -32,10 +33,9 @@ def get_repository(db: str) -> RepositoryDAO:
     if db == "redis":
         return RepositoryRedis()
 
+
 #without comments, categories and quotes
 def add_only_books_test(db):
-    import typing as t
-    
     dao = get_repository(db)
     dao.clear_db()
     records: t.List[Book] = load_all_records()
@@ -53,10 +53,9 @@ def add_only_books_test(db):
     with open(f'add_test_{db}.json', 'w') as outfile:
         outfile.write(all_measurement.to_json())
 
+
 #with comment, categories and quotes
 def add_books_test_all(db):
-    import typing as t
-    
     dao = get_repository(db)
     dao.clear_db()
     records: t.List[Book] = load_all_records()
@@ -74,9 +73,8 @@ def add_books_test_all(db):
     with open(f'add_test_{db}_all.json', 'w') as outfile:
         outfile.write(all_measurement.to_json())
 
+
 def del_books_test(db):
-    import typing as t
-    
     dao = get_repository(db)
     dao.clear_db()
     records: t.List[Book] = load_all_records()
@@ -95,9 +93,8 @@ def del_books_test(db):
     with open(f'del_test_{db}.json', 'w') as outfile:
         outfile.write(all_measurement.to_json())
 
+
 def filter_books_test(db):
-    import typing as t
-    
     dao = get_repository(db)
     dao.clear_db()
     records: t.List[Book] = load_all_records()
@@ -117,11 +114,15 @@ def filter_books_test(db):
         measurement2.num_records = result[0]
     all_measurement.test.append(measurement2)
 
-        
+    measurement3: AddTestItem = AddTestItem(num_records=0, time=[])
+    for _ in range (0, 10):
+        result = dao.filter_test_3()
+        measurement3.time.append(result[2])
+        measurement3.num_records = result[0]
+    all_measurement.test.append(measurement3)
 
     with open(f'filter_test_{db}.json', 'w') as outfile:
         outfile.write(all_measurement.to_json())
-
 
 
 if __name__ == "__main__":

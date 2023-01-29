@@ -41,9 +41,9 @@ class RepositoryDAO(ABC):
     @abstractmethod
     def filter_test_2(self):
         pass
-    # @abstractmethod
-    # def filter_test_3(self):
-    #     pass
+     @abstractmethod
+    def filter_test_3(self):
+        pass
 
 class RepositorySql(RepositoryDAO):
 
@@ -139,6 +139,15 @@ class RepositorySql(RepositoryDAO):
             .filter(BookDB.id.in_(subquery_quotes))
         end_time = time.time()
         # print(str(query))
+        return [query.count(), (end_time-start_time)*1000, "SELECT * FROM categories JOIN books ON categories.book_id = books.id JOIN quotes ON quotes.book_id = books.id WHERE books.lang = 'polski' AND books.pages > 100 AND books.pages < 200 AND quotes.content LIKE 'to'"]
+    
+    def filter_test_3(self):
+        start_time = time.time()
+        query = self.session.query(BookDB)\
+            .filter(BookDB.description.contains("co"))\
+            .filter(BookDB.date > '2000-01-01', BookDB.date < '2010-01-01')
+        end_time = time.time()
+        print(str(query))
         return [query.count(), (end_time-start_time)*1000, "SELECT * FROM categories JOIN books ON categories.book_id = books.id JOIN quotes ON quotes.book_id = books.id WHERE books.lang = 'polski' AND books.pages > 100 AND books.pages < 200 AND quotes.content LIKE 'to'"]
 
     def clear_db(self):
@@ -242,6 +251,20 @@ class RepositoryMongo(RepositoryDAO):
             counter += 1
         return [counter, (end_time-start_time)*1000, "SELECT * FROM categories JOIN books ON categories.book_id = books.id JOIN quotes ON quotes.book_id = books.id WHERE books.lang = 'polski' AND books.pages > 100 AND books.pages < 200 AND quotes.content LIKE 'to'"]
 
+    def filter_test_3(self):
+        self.collection = self.db.get_collection("books")
+        first_date = datetime.datetime(2000, 1, 1)
+        second_date = datetime.datetime(2010, 1, 1)
+        query = {"date": {"$gt" : first_date, "$lt": second_date}, "description": {"$regex" : "to"}}
+        start_time = time.time()
+        all_documents = self.collection.find(query)
+        end_time = time.time()
+
+        counter = 0
+        for document in all_documents:
+            counter += 1
+        return [counter, (end_time-start_time)*1000]
+
     def clear_db(self):
         self.db.drop_collection("books")
         self.db.drop_collection("categories")
@@ -292,6 +315,9 @@ class RepositoryRedis(RepositoryDAO):
     def filter_test_2(self):
         pass
 
+    def filter_test_3(self):
+        pass
+    
     def clear_db(self):
         self.client = get_redis(RedisDbs.BOOKS)
         self.client.flushall()
