@@ -41,7 +41,7 @@ class RepositoryDAO(ABC):
     @abstractmethod
     def filter_test_2(self):
         pass
-     @abstractmethod
+    @abstractmethod
     def filter_test_3(self):
         pass
 
@@ -317,7 +317,7 @@ class RepositoryRedis(RepositoryDAO):
 
     def filter_test_3(self):
         pass
-    
+
     def clear_db(self):
         self.client = get_redis(RedisDbs.BOOKS)
         self.client.flushall()

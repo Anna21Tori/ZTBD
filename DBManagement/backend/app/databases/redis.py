@@ -21,7 +21,6 @@ schema = (TextField("$.comment_id", as_name="comment_id"),TextField("$.category_
 try:
     info = redisInstanceBooks.ft('books_idx').info()
 except exceptions.ResponseError as e:
-    print("adding index")
     redisInstanceBooks.ft('books_idx').create_index(schema, definition=IndexDefinition(prefix=["book:"], index_type=IndexType.JSON))
 
 

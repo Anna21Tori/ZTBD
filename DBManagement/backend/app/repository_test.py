@@ -53,6 +53,7 @@ class RepositoryFiltersTest(RepositoryTest):
     
     def get(self):
         sqls = ["FROM books WHERE books.pages > 100 AND books.pages < 300",
+        "SELECT * FROM categories JOIN books ON categories.book_id = books.id JOIN quotes ON quotes.book_id = books.id WHERE books.lang = 'polski' AND books.pages > 100 AND books.pages < 200 AND quotes.content LIKE 'to'",
         "SELECT * FROM categories JOIN books ON categories.book_id = books.id JOIN quotes ON quotes.book_id = books.id WHERE books.lang = 'polski' AND books.pages > 100 AND books.pages < 200 AND quotes.content LIKE 'to'"]
         result: ResultFiltersTest = ResultFiltersTest(mongodb=[], postgresql=[], redis=[], sqls=sqls)
 
