@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from app.repository import RepositoryMongo, RepositorySql, Book, RepositoryDAO
+from app.repository import RepositoryMongo, RepositorySql, Book, RepositoryDAO, RepositoryRedis
 from loader_data import load_all_records
 import typing as t
 import json
@@ -29,6 +29,8 @@ def get_repository(db: str) -> RepositoryDAO:
         return RepositoryMongo()
     if db == "postgresql":
         return RepositorySql()
+    if db == "redis":
+        return RepositoryRedis()
 
 #without comments, categories and quotes
 def add_only_books_test(db):
@@ -78,11 +80,11 @@ def del_books_test(db):
     dao = get_repository(db)
     dao.clear_db()
     records: t.List[Book] = load_all_records()
-    times = [1, 10, 100, 1000]
+    times = [1, 100, 1000]
     all_measurement: AddTest =  AddTest(test=[])
     for t in times:
         measurement: AddTestItem = AddTestItem(num_records=t, time=[])
-        for _ in range (0, 1):
+        for _ in range (0, 3):
             dao.clear_db()
             dao.save_all(records)
             time = dao.delete(t)
@@ -129,6 +131,8 @@ if __name__ == "__main__":
 
     if args.test == "add_books_mongo":
         add_only_books_test("mongodb")
+    if args.test == "add_books_redis":
+        add_only_books_test("redis")
     if args.test == "add_books_postgresql":
         add_only_books_test("postgresql")
     if args.test == "add_books_mongo_all":

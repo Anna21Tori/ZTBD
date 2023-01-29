@@ -49,6 +49,9 @@ class QuoteBase(BaseModel):
 class QuoteCreate(QuoteBase):
     pass
 
+class QuoteRedis(QuoteBase):
+    pass
+
 class Quote(QuoteBase):
 
     class Config:

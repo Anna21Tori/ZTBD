@@ -9,7 +9,7 @@ import typing as t
 from app.models.comment.comment import CommentMongo
 from app.models.category.category import CategoryMongo
 from app.models.quote.quote import QuoteMongo
- 
+import json
 class BookDB(Base):
     __tablename__ = "books"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -70,6 +70,11 @@ class BookBase(BaseModel):
 
 class BookCreate(BookBase):
     pass
+
+class BookRedis(BookBase):
+    def to_json(self):
+        return json.dumps(self, default=lambda o: o.__dict__, 
+            sort_keys=True, indent=4)
 
 class Book(BookBase):
     class Config:

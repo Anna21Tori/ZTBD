@@ -7,3 +7,4 @@ pymongo==4.3.3
 progress==1.6
 aiohttp==3.8.3
 python-dotenv
+redis==4.4.2

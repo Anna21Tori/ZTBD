@@ -43,6 +43,9 @@ class CategoryBase(BaseModel):
 class CategoryCreate(CategoryBase):
     pass
 
+class CategoryRedis(CategoryBase):
+    pass
+
 class Category(CategoryBase):
 
     class Config:

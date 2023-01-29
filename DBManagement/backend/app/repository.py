@@ -1,14 +1,19 @@
 from abc import ABC, abstractmethod
-from app.models.book.book import BookDB, BookMongo, BookCreate, Book as BookModel
+from json import JSONEncoder
+from app.models.book.book import BookDB, BookMongo, BookCreate, Book as BookModel, BookRedis
 from app.models.comment.comment import CommentDB, CommentMongo, CommentCreate, Comment
 from app.models.quote.quote import QuoteDB, QuoteMongo, QuoteCreate
 from app.models.category.category import CategoryDB, CategoryMongo, CategoryCreate, Category
 from app.databases.sql import SessionLocal, Base, engine
+from app.databases.redis import get_redis, RedisDbs
 from app.databases.mongo import db as mongodb
 import typing as t
 from dataclasses import dataclass
 import time
-
+from redis import Redis
+from redis.commands.json.path import Path
+import datetime
+import json
 @dataclass
 class Book:
     book: BookCreate
@@ -242,3 +247,59 @@ class RepositoryMongo(RepositoryDAO):
         self.db.drop_collection("categories")
         self.db.drop_collection("comments")
         self.db.drop_collection("quotes")
+
+def json_default(value):
+    if isinstance(value, datetime.date):
+        return dict(year=value.year, month=value.month, day=value.day)
+    else:
+        return value.__dict__
+
+class RepositoryRedis(RepositoryDAO):
+
+    def __init__(self) -> None:
+        super().__init__()
+        
+        self.client = get_redis(RedisDbs.BOOKS)
+        self.key_prefix = "book:"
+
+    def save_all(self, books: t.List[Book]):
+       pass
+
+    def save(self, books: t.List[Book]):
+        self.client = get_redis(RedisDbs.BOOKS)
+        self.key_prefix = "book:"
+        _books = []
+        for book in books:
+            book_redis = BookRedis(**book.book.dict())
+            _books.append(json.dumps(book_redis, cls=JSONEncoder, ensure_ascii=False, default=json_default))
+        counter=0
+
+        start_time = time.time()
+        for book in _books:
+            self.client.json().set(self.key_prefix + str(counter), Path.root_path(), book)
+            counter+=1
+        end_time = time.time()
+        
+       
+        return (end_time-start_time)*1000
+
+    def delete(self, count: int):
+        pass
+
+    def filter_test_1(self):
+        pass
+    
+    def filter_test_2(self):
+        pass
+
+    def clear_db(self):
+        self.client = get_redis(RedisDbs.BOOKS)
+        self.client.flushall()
+        self.client = get_redis(RedisDbs.CATEGORIES)
+        self.client.flushall()
+        self.client = get_redis(RedisDbs.COMMENTS)
+        self.client.flushall()
+        self.client = get_redis(RedisDbs.QUOTES)
+        self.client.flushall()
+
+
