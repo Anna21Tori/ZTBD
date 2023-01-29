@@ -103,6 +103,7 @@ def filter_books_test(db):
     measurement1: AddTestItem = AddTestItem(num_records=0, time=[])
     for _ in range (0, 10):
         result = dao.filter_test_1()
+        print(result[1])
         measurement1.time.append(result[1])
         measurement1.num_records = result[0]
     all_measurement.test.append(measurement1)
@@ -110,6 +111,7 @@ def filter_books_test(db):
     measurement2: AddTestItem = AddTestItem(num_records=0, time=[])
     for _ in range (0, 10):
         result = dao.filter_test_2()
+        print(result[1])
         measurement2.time.append(result[1])
         measurement2.num_records = result[0]
     all_measurement.test.append(measurement2)
@@ -117,7 +119,8 @@ def filter_books_test(db):
     measurement3: AddTestItem = AddTestItem(num_records=0, time=[])
     for _ in range (0, 10):
         result = dao.filter_test_3()
-        measurement3.time.append(result[2])
+        print(result[1])
+        measurement3.time.append(result[1])
         measurement3.num_records = result[0]
     all_measurement.test.append(measurement3)
 

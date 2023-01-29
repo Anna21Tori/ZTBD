@@ -152,7 +152,7 @@ class RepositorySql(RepositoryDAO):
             .filter(BookDB.description.contains("co"))\
             .filter(BookDB.date > '2000-01-01', BookDB.date < '2010-01-01')
         end_time = time.time()
-        print(str(query))
+     
         return [query.count(), (end_time-start_time)*1000, "SELECT * FROM categories JOIN books ON categories.book_id = books.id JOIN quotes ON quotes.book_id = books.id WHERE books.lang = 'polski' AND books.pages > 100 AND books.pages < 200 AND quotes.content LIKE 'to'"]
 
     def clear_db(self):
