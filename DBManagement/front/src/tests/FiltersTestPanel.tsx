@@ -52,8 +52,8 @@ export const FiltersTestPanel = (props: TestPanelProps) => {
             <p>{test != null ? test.sqls[page-1]: ''}</p>
         </div>
         <div className='d-flex justify-content-center'>
-            <Stack spacing={2}>
-                <Pagination count={2} variant="outlined" color="secondary" page={page} onChange={handleChange}/>
+            <Stack spacing={test.sqls.length}>
+                <Pagination count={test.sqls.length} variant="outlined" color="secondary" page={page} onChange={handleChange}/>
             </Stack>
         </div>
          

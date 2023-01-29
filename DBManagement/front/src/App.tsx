@@ -25,7 +25,7 @@ function App() {
     
     <div className="container-fluid">
       <div className="row">
-        <div className="col-8 offset-2">
+        <div className="col-10 offset-1">
            <BasicTabs setLoading={setLoading} setError={setError}/>
         </div>
       </div>

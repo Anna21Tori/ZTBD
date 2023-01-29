@@ -19,13 +19,33 @@ export const options = {
   responsive: true,
   plugins: {
     legend: {
-      position: 'top' as const,
+      position: 'right' as const,
     },
     title: {
       display: false,
       text: '',
     },
   },
+  scales: {
+      y: {
+        title: {
+          display: true,
+          text: 'Times'
+        },
+        ticks: {
+          callback: function(val: number | string, index: any) {
+            // Hide every 2nd tick label
+            return `${val} ms`;
+          }
+        }
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Records'
+        },
+      }
+    },
 };
 
 

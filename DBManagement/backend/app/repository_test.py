@@ -47,6 +47,10 @@ class RepositoryDelTest(RepositoryTest):
 
             result.postgresql = AddTest(**json.loads(json_file.read()))
 
+        with open(f'del_test_postgresql.json', 'r', encoding='utf-8') as json_file:
+
+            result.redis = AddTest(**json.loads(json_file.read()))
+
         return result
 
 class RepositoryFiltersTest(RepositoryTest):
