@@ -1,0 +1,13 @@
+PROJECT_NAME=DBManagement
+BACKEND_CORS_ORIGINS=["http://localhost:8000", "https://localhost:8000", "http://localhost", "https://localhost"]
+DATABASE_URI="sqlite:///./sql_app.db"
+ 
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_SERVER=database
+POSTGRES_DB=app
+ 
+MONGODB_URI="mongodb://root:example@localhost:27017"
+
+REDIS_HOST="localhost"
+REDIS_PORT="6379"

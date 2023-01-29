@@ -6,11 +6,15 @@ from app.databases.mongo import PyObjectId
 from bson import ObjectId
 from datetime import datetime
 import typing as t
-from app.models.comment.comment import CommentMongo
-from app.models.category.category import CategoryMongo
-from app.models.quote.quote import QuoteMongo
+from app.models.comment.comment import CommentMongo, CommentRedis
+from app.models.category.category import CategoryMongo, CategoryRedis
+from app.models.quote.quote import QuoteMongo, QuoteRedis
 import json
+import redis
+
+
 class BookDB(Base):
+
     __tablename__ = "books"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     title = Column(String(1000))
@@ -72,6 +76,10 @@ class BookCreate(BookBase):
     pass
 
 class BookRedis(BookBase):
+    comments: t.Optional[t.List[CommentRedis]]
+    categories: t.Optional[t.List[CategoryRedis]]
+    quotes: t.Optional[t.List[QuoteRedis]]
+
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=True, indent=4)

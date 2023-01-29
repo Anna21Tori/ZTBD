@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
 from json import JSONEncoder
+
+import redis
 from app.models.book.book import BookDB, BookMongo, BookCreate, Book as BookModel, BookRedis
-from app.models.comment.comment import CommentDB, CommentMongo, CommentCreate, Comment
-from app.models.quote.quote import QuoteDB, QuoteMongo, QuoteCreate
-from app.models.category.category import CategoryDB, CategoryMongo, CategoryCreate, Category
+from app.models.comment.comment import CommentDB, CommentMongo, CommentCreate, Comment, CommentRedis
+from app.models.quote.quote import QuoteDB, QuoteMongo, QuoteCreate, QuoteRedis
+from app.models.category.category import CategoryDB, CategoryMongo, CategoryCreate, Category, CategoryRedis
 from app.databases.sql import SessionLocal, Base, engine
 from app.databases.redis import get_redis, RedisDbs
 from app.databases.mongo import db as mongodb
@@ -14,6 +16,9 @@ from redis import Redis
 from redis.commands.json.path import Path
 import datetime
 import json
+import pickle
+
+
 @dataclass
 class Book:
     book: BookCreate
@@ -278,15 +283,43 @@ def json_default(value):
         return value.__dict__
 
 class RepositoryRedis(RepositoryDAO):
-
-    def __init__(self) -> None:
-        super().__init__()
-        
-        self.client = get_redis(RedisDbs.BOOKS)
-        self.key_prefix = "book:"
+    def __init__(self, host='localhost', port = 6379, db=0):
+        self.redis = redis.Redis(host=host, port=port, db=db)
 
     def save_all(self, books: t.List[Book]):
-       pass
+        _books: t.List[any] = []
+
+        for book in books:
+            comments: t.List[CommentRedis] = []
+            for comment in book.comments:
+                comment_redis = CommentRedis(**comment.dict())
+                comments.append(comment_redis)
+
+            categories: t.List[CategoryRedis] = []
+            for category in book.categories:
+                category_redis = CategoryMongo(**category.dict())
+                categories.append(category_redis)
+
+            quotes: t.List[QuoteRedis] = []
+            for quote in book.quotes:
+                quote_redis = QuoteRedis(**quote.dict())
+                quotes.append(quote_redis)
+
+            book_redis = BookRedis(**book.book.dict())
+            book_redis.comments = comments
+            book_redis.categories = categories
+            book_redis.quotes = quotes
+            _books.append(json.dumps(book_redis, cls=JSONEncoder, ensure_ascii=False, default=json_default))
+     
+        counter=0
+        start_time = time.time()
+        for book in _books:
+            self.redis.set("books", book)
+            counter+=1
+        end_time = time.time()
+       
+        return (end_time-start_time)*1000
+
 
     def save(self, books: t.List[Book]):
         self.client = get_redis(RedisDbs.BOOKS)
@@ -307,7 +340,11 @@ class RepositoryRedis(RepositoryDAO):
         return (end_time-start_time)*1000
 
     def delete(self, count: int):
-        pass
+        start_time = time.time()
+        self.redis.flushall()
+        end_time = time.time()
+
+        return (end_time-start_time)*1000
 
     def filter_test_1(self):
         pass
@@ -327,5 +364,3 @@ class RepositoryRedis(RepositoryDAO):
         self.client.flushall()
         self.client = get_redis(RedisDbs.QUOTES)
         self.client.flushall()
-
-
